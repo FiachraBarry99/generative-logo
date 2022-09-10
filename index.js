@@ -5,15 +5,15 @@ const Color = require('canvas-sketch-util/color');
 
 const settings = {
   dimensions: [1080, 1080],
-  animate: false,
+  animate: true,
 };
 
 const sketch = ({ context, width, height }) => {
-  const num = 100;
+  const num = 80;
   const degrees = -25;
   const size = 1.5;
 
-  let x, y, w, h, fill, stroke;
+  let x, y, w, h, fill, stroke, offset1, offset2;
   const rects = [];
 
   const colours = [
@@ -28,8 +28,6 @@ const sketch = ({ context, width, height }) => {
   ];
 
   for (let i = 0; i < num; i++) {
-    context.save();
-
     x = random.range(0, width);
     y = random.range(0, height);
     w = random.range(100 * size, 400 * size);
@@ -42,6 +40,8 @@ const sketch = ({ context, width, height }) => {
 
     rects.push({ x, y, w, h, stroke, fill, blend });
   }
+
+  let i = 0;
 
   return ({ context, width, height }) => {
     context.save();
@@ -56,6 +56,14 @@ const sketch = ({ context, width, height }) => {
     context.fillStyle = '#7AC5DE';
     context.fillRect(0, 0, width, height);
 
+    i++;
+    if (i === (1000 * (2 * Math.PI)) / 0.001) {
+      i = 0;
+    }
+    // figure out how much to offset fill by each frame
+    offset1 = 80 * Math.sin(0.001 * i);
+    offset2 = 10 * Math.cos(0.005 * i) + 1;
+
     rects.forEach((rect) => {
       const { x, y, w, h, stroke, fill, blend } = rect;
 
@@ -63,7 +71,18 @@ const sketch = ({ context, width, height }) => {
       context.translate(-(width * 0.5 - 317), -(width * 0.5 - 92.25));
       context.translate(x, y);
 
-      drawSkewedRect({ context, w, h, degrees, stroke, fill, blend });
+      drawSkewedRect({
+        context,
+        w,
+        h,
+        degrees,
+        stroke,
+        fill,
+        blend,
+        i,
+        offset1,
+        offset2,
+      });
 
       context.restore();
     });
@@ -78,6 +97,8 @@ const sketch = ({ context, width, height }) => {
 
     context.translate(width * 0.5 - 317, width * 0.5 - 92.25);
     shee = drawShee(context, 'rgba(0,0,0,0.6)');
+
+    context.restore();
   };
 };
 
@@ -89,14 +110,20 @@ const drawSkewedRect = ({
   stroke = 'black',
   fill = 'blue',
   blend = 'source-over',
+  i = 0,
+  offset1,
+  offset2,
 }) => {
   const angle = math.degToRad(degrees);
   const rx = Math.cos(angle) * w;
   const ry = Math.sin(angle) * w;
 
   context.save();
+
+  let fillColor = Color.offsetHSL(fill, offset1, offset2, 0);
+  context.fillStyle = Color.style(fillColor.rgba);
+
   context.translate(rx * -0.5, (ry + h) * -0.5);
-  context.fillStyle = fill;
   context.strokeStyle = stroke;
   context.lineWidth = 10;
 
@@ -108,7 +135,7 @@ const drawSkewedRect = ({
   context.closePath();
 
   let shadowColor = Color.offsetHSL(fill, 0, 10, -40);
-  shadowColor.rgba[3] = random.range(0.2, 0.6);
+  shadowColor.rgba[3] = 0.4;
 
   context.shadowColor = Color.style(shadowColor.rgba);
   context.shadowOffsetX = -10;
@@ -151,12 +178,12 @@ const drawShee = function (ctx, stroke) {
 
   let hhh = new Path2D();
   hhh.moveTo(165, 184.5);
-  hhh.lineTo(165, 1.00001);
-  hhh.lineTo(200, 1.00001);
+  hhh.lineTo(165, 1);
+  hhh.lineTo(200, 1);
   hhh.lineTo(200, 79.5);
   hhh.lineTo(271, 79.5);
-  hhh.lineTo(271, 1.00001);
-  hhh.lineTo(306, 1.00001);
+  hhh.lineTo(271, 1);
+  hhh.lineTo(306, 1);
   hhh.lineTo(306, 184.5);
   hhh.lineTo(271, 184.5);
   hhh.lineTo(271, 114.5);
