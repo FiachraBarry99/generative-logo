@@ -44,6 +44,9 @@ const sketch = ({ context, width, height }) => {
   let i = 0;
 
   return ({ context, width, height }) => {
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, width, height);
+
     context.save();
 
     context.lineWidth = 8;
@@ -53,16 +56,18 @@ const sketch = ({ context, width, height }) => {
 
     context.clip(shee);
 
-    context.fillStyle = '#7AC5DE';
-    context.fillRect(0, 0, width, height);
-
     i++;
-    if (i === (1000 * (2 * Math.PI)) / 0.001) {
+    if (i === (1000 * (2 * Math.PI)) / 0.0003) {
       i = 0;
     }
     // figure out how much to offset fill by each frame
-    offset1 = 80 * Math.sin(0.001 * i);
-    offset2 = 10 * Math.cos(0.005 * i) + 1;
+    offset1 = 60 * Math.sin(0.0003 * i);
+    offset2 = 10 * Math.cos(0.0006 * i) + 1;
+
+    context.fillStyle = Color.style(
+      Color.offsetHSL('#7AC5DE', offset1, offset2, 0).rgba
+    );
+    context.fillRect(0, 0, width, height);
 
     rects.forEach((rect) => {
       const { x, y, w, h, stroke, fill, blend } = rect;
@@ -79,7 +84,6 @@ const sketch = ({ context, width, height }) => {
         stroke,
         fill,
         blend,
-        i,
         offset1,
         offset2,
       });
@@ -110,7 +114,6 @@ const drawSkewedRect = ({
   stroke = 'black',
   fill = 'blue',
   blend = 'source-over',
-  i = 0,
   offset1,
   offset2,
 }) => {
@@ -120,11 +123,15 @@ const drawSkewedRect = ({
 
   context.save();
 
-  let fillColor = Color.offsetHSL(fill, offset1, offset2, 0);
-  context.fillStyle = Color.style(fillColor.rgba);
+  let fillColor = Color.style(Color.offsetHSL(fill, offset1, offset2, 0).rgba);
+  context.fillStyle = fillColor;
 
   context.translate(rx * -0.5, (ry + h) * -0.5);
-  context.strokeStyle = stroke;
+
+  let strokeColor = Color.style(
+    Color.offsetHSL(stroke, offset1, offset2, 0).rgba
+  );
+  context.strokeStyle = strokeColor;
   context.lineWidth = 10;
 
   context.beginPath();
@@ -134,7 +141,7 @@ const drawSkewedRect = ({
   context.lineTo(0, h);
   context.closePath();
 
-  let shadowColor = Color.offsetHSL(fill, 0, 10, -40);
+  let shadowColor = Color.offsetHSL(fillColor, 0, 10, -40);
   shadowColor.rgba[3] = 0.4;
 
   context.shadowColor = Color.style(shadowColor.rgba);
