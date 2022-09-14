@@ -1,6 +1,6 @@
 # Generative Logo
 
-A lightly animated logo design made using the canvas-sketch library
+A lightly animated logo design made using the canvas-sketch library. Refresh to see a new permutation
 
 ---
 
